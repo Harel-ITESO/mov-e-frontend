@@ -72,7 +72,8 @@ export default function Home() {
         <Link href="/login">Login</Link>
         <Link href="/register">Register</Link>
         <Link href="/verify">Verify</Link>
-        <Link href="/movie_search">Movie search</Link>
+        <Link href="/films">Movie search</Link>
+        <Link href="/films/details">Movie search</Link>
         <Link href="/profile">Profile</Link>
         <Link href="/profile/edit">Profile configuration</Link>
       <Footer />

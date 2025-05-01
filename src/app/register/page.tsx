@@ -21,7 +21,7 @@ export default function Register() {
 
       <section className="flex flex-col items-center justify-center py-20 px-6">
         <div className="w-full max-w-md bg-gray-900 p-8 rounded shadow-lg">
-          <h1 className="text-3xl font-bold mb-6 text-center">Sign in to MovE</h1>
+          <h1 className="text-3xl font-bold mb-6 text-center">Create MovE account</h1>
 
           <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
             <input

@@ -9,7 +9,7 @@ import Navbar from "../components/navbar";
 
 const movies = [
   { title: "Minecraft Movie", poster: "/posters/minecraft.jpg", views: "483K", likes: "150K" },
-  { title: "Mickey 17", poster: "/posters/mickey17.jpg", views: "1.1M", likes: "385K" },
+  { title: "Sinners", poster: "/posters/sinners.jpg", views: "1.1M", likes: "385K" },
   { title: "Adolescence", poster: "/posters/adolescence.jpg", views: "681K", likes: "219K" },
   { title: "Common People", poster: "/posters/commonpeople.jpg", views: "38K", likes: "9.5K" },
 ];
