@@ -1,18 +1,26 @@
-// src/app/login/page.tsx
 "use client";
 import Footer from "../components/footer";
 import Navbar from "../components/navbar";
-import { useRouter } from "next/navigation";
+import axios from "axios";
 
 export default function Register() {
-  const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Simulación de envío de verificación
-    const token = "";
-    router.push(`/verify?token=${token}`);
+    try {
+      const emailInput = document.querySelector("input[type=email]") as HTMLInputElement;
+      const email = emailInput.value;
+
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/v1/api/authentication/register/email`, {
+        email,
+      });
+
+      alert("Revisa tu correo para verificar tu cuenta.");
+    } catch (error) {
+      console.error("Error al registrar el correo", error);
+      alert("Ocurrió un error, intenta nuevamente.");
+    }
   };
 
   return (
@@ -27,18 +35,6 @@ export default function Register() {
             <input
               type="email"
               placeholder="Email address"
-              className="input input-bordered w-full text-black"
-              required
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              className="input input-bordered w-full text-black"
-              required
-            />
-            <input
-              type="password"
-              placeholder="Confirm Password"
               className="input input-bordered w-full text-black"
               required
             />

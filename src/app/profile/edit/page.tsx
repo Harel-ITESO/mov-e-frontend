@@ -1,84 +1,79 @@
-// src/app/profile/edit/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Navbar from "@/app/components/navbar";
-import Footer from "@/app/components/footer";
+import axios from "axios";
 
-export default function EditProfilePage() {
+export default function EditProfile() {
   const router = useRouter();
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    bio: "",
-    location: ""
+  const [formData, setFormData] = useState({
+    username: "",
+    password: "",
+    repeatedPassword: "",
   });
 
   useEffect(() => {
-    const stored = localStorage.getItem("user");
-    if (stored) {
-      const data = JSON.parse(stored);
-      setForm({ ...form, ...data });
-    }
-  }, []);
+    const jwt = sessionStorage.getItem("tempJwt");
+    if (!jwt) router.push("/login");
+  }, [router]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    localStorage.setItem("user", JSON.stringify(form));
-    router.push("/profile");
+  
+    const jwt = sessionStorage.getItem("tempJwt");
+    if (!jwt) {
+      alert("Token no disponible. Verifica tu correo nuevamente.");
+      return;
+    }
+  
+    try {
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/api/authentication/register/signup`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${jwt}`,
+          },
+        }
+      );
+  
+      sessionStorage.removeItem("tempJwt");
+      alert("Cuenta creada con éxito");
+      router.push("/login");
+    } catch (error: any) {
+      console.error("Error en el registro:", error?.response?.data || error);
+      alert(error?.response?.data?.message || "Error al completar el registro.");
+    }
   };
 
   return (
-    <main className="bg-gray-950 text-white min-h-screen font-sans">
-      <Navbar />
-
-      <section className="max-w-xl mx-auto py-16 px-6">
-        <h1 className="text-3xl font-bold mb-6 text-center">Complete or Edit Your Profile</h1>
-
-        <form onSubmit={handleSubmit} className="bg-gray-900 p-6 rounded shadow flex flex-col gap-4">
-          <input
+    <main className="bg-gray-950 text-white min-h-screen flex items-center justify-center">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                <input
             type="text"
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            placeholder="Name"
-            className="input input-bordered text-black"
-          />
-          <input
-            type="email"
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-            placeholder="Email"
-            className="input input-bordered text-black"
-          />
-          <textarea
-            name="bio"
-            value={form.bio}
-            onChange={handleChange}
-            placeholder="Tell us a bit about yourself..."
-            className="textarea textarea-bordered text-black"
-          />
-          <input
-            type="text"
-            name="location"
-            value={form.location}
-            onChange={handleChange}
-            placeholder="Location"
-            className="input input-bordered text-black"
+            placeholder="Nombre de usuario"
+            value={formData.username}
+            onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+            required
           />
 
-          <button type="submit" className="btn btn-success">Save Profile</button>
-        </form>
-      </section>
+          <input
+            type="password"
+            placeholder="Contraseña"
+            value={formData.password}
+            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+            required
+          />
 
-      <Footer />
+          <input
+            type="password"
+            placeholder="Repetir contraseña"
+            value={formData.repeatedPassword}
+            onChange={(e) => setFormData({ ...formData, repeatedPassword: e.target.value })}
+            required
+          />
+        <button type="submit" className="btn btn-success">Completar Registro</button>
+      </form>
     </main>
   );
 }
-

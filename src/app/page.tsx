@@ -1,9 +1,39 @@
 // src/app/page.tsx
+"use client";
 import Footer from "./components/footer";
 import Navbar from "./components/navbar";
 import Image from "next/image";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import axios from "axios";
 
 export default function Home() {
+
+  const router = useRouter();
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
+  useEffect(() => {
+    axios
+      .get(`${process.env.NEXT_PUBLIC_API_URL}/v1/api/authentication/account/authenticated`, {
+        withCredentials: true,
+      })
+      .then(() => {
+        router.push("/main");
+      })
+      .catch(() => {
+        setCheckingAuth(false); // no está logueado, mostrar landing
+      });
+  }, [router]);
+
+  if (checkingAuth) {
+    return (
+      <main className="bg-gray-950 text-white min-h-screen flex items-center justify-center">
+        <p className="text-xl">Cargando...</p>
+      </main>
+    );
+  }
+
+
   return (
     
     <main className="bg-gray-950 text-white font-sans">
