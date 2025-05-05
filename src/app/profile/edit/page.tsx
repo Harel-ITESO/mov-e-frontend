@@ -13,8 +13,19 @@ export default function EditProfile() {
   });
 
   useEffect(() => {
-    const jwt = sessionStorage.getItem("tempJwt");
-    if (!jwt) router.push("/login");
+    const validateSession = async () => {
+      try {
+        await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/api/authentication/account/authenticated`,
+          { withCredentials: true }
+        );
+      } catch (err) {
+        console.warn("Usuario no autenticado, redirigiendo a login...");
+        router.push("/login");
+      }
+    };
+  
+    validateSession();
   }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
