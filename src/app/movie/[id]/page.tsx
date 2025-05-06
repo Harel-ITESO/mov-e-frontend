@@ -51,7 +51,7 @@ export default function MovieDetailPage() {
         `${process.env.NEXT_PUBLIC_API_URL}/v1/api/ratings/rating`,
         {
           movieId: movie.id,
-          rating: rating * 2,
+          rating: rating,
           commentary,
         },
         { withCredentials: true }
@@ -64,14 +64,14 @@ export default function MovieDetailPage() {
   };
 
   const renderStars = () => {
-    const displayRating = (hoveredRating ?? rating);
+    const displayRating = hoveredRating ?? rating;
     const stars = [];
   
     for (let i = 1; i <= 5; i++) {
       let fill = "none";
-      if (displayRating >= i * 2) {
+      if (displayRating >= i) {
         fill = "full";
-      } else if (displayRating >= (i * 2) - 1) {
+      } else if (displayRating >= i - 0.5) {
         fill = "half";
       }
   
@@ -85,14 +85,14 @@ export default function MovieDetailPage() {
           {/* Mitad izquierda (media estrella) */}
           <div
             className="absolute left-0 top-0 w-1/2 h-full z-10"
-            onMouseEnter={() => setHoveredRating((i - 0.5) * 2)}
-            onClick={() => setRating((i - 0.5) * 2)}
+            onMouseEnter={() => setHoveredRating(i - 0.5)}
+            onClick={() => setRating(i - 0.5)}
           />
           {/* Mitad derecha (estrella completa) */}
           <div
             className="absolute right-0 top-0 w-1/2 h-full z-10"
-            onMouseEnter={() => setHoveredRating(i * 2)}
-            onClick={() => setRating(i * 2)}
+            onMouseEnter={() => setHoveredRating(i)}
+            onClick={() => setRating(i)}
           />
           {/* Icono de estrella */}
           <Star
@@ -159,7 +159,7 @@ export default function MovieDetailPage() {
             <div className="grid gap-4">
               <div className="flex gap-1">{renderStars()}</div>
               <p className="text-sm text-gray-400 mt-1">
-                Calificación seleccionada: <strong>{(rating)} / 10</strong>
+                Calificación seleccionada: <strong>{(rating.toFixed(1))} / 5.0</strong>
               </p>
               <textarea
                 className="textarea textarea-bordered w-full text-black"
