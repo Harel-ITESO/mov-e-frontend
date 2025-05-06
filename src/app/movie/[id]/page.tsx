@@ -11,7 +11,7 @@ export default function MovieDetailPage() {
   const { id } = useParams();
   const router = useRouter();
   const [movie, setMovie] = useState<any>(null);
-  const [rating, setRating] = useState<number>(0); // 0.5 - 5.0
+  const [rating, setRating] = useState<number>(0);
   const [commentary, setCommentary] = useState("");
   const [loading, setLoading] = useState(true);
   const [hoveredRating, setHoveredRating] = useState<number | null>(null);
