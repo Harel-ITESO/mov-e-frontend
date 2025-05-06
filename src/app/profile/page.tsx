@@ -4,30 +4,31 @@
 
 import { useEffect, useState } from "react";
 import Footer from "../components/footer";
-import Navbar from "../components/navbar";
+import Navbar from "../components/logged-in-navbar";
 import Link from "next/link";
 
 
 export default function ProfilePage() {
-    const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+    const [user, setUser] = useState<{ username: string; email: string } | null>(null);
   
     useEffect(() => {
       const checkAuthAndLoad = async () => {
         try {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/api/authentication/account/authenticated`, {
+          const authRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/api/authentication/account/authenticated`, {
             credentials: "include",
           });
     
-          if (!res.ok) {
+          if (!authRes.ok) {
             throw new Error("Not authenticated");
           }
-    
-          const stored = localStorage.getItem("user");
-          const initial = stored
-            ? JSON.parse(stored)
-            : { name: "John Doe", email: "johndoe@email.com" };
-    
-          setUser(initial);
+
+          const userRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/api/account/profile`, {
+            credentials: "include",
+          });
+
+          const userData = await userRes.json();
+          setUser({ username: userData.username, email: userData.email })
+
         } catch (err) {
           console.warn("Usuario no autenticado, redirigiendo...");
           window.location.href = "/login"; // o "/main"
@@ -44,7 +45,7 @@ export default function ProfilePage() {
   
         <section className="py-16 px-6 max-w-5xl mx-auto">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-4xl font-bold">{user?.name}s Profile</h1>
+            <h1 className="text-4xl font-bold">{user?.username} Profile</h1>
             <Link href="/profile/edit" className="btn btn-sm btn-outline btn-accent">
               Complete / Edit Profile
             </Link>
@@ -53,7 +54,7 @@ export default function ProfilePage() {
           <div className="grid md:grid-cols-3 gap-10">
             <div className="col-span-1 bg-gray-900 p-6 rounded shadow">
               <h2 className="text-xl font-bold mb-4">User Info</h2>
-              <p><span className="text-gray-400">Name:</span> {user?.name}</p>
+              <p><span className="text-gray-400">Name:</span> {user?.username}</p>
               <p><span className="text-gray-400">Email:</span> {user?.email}</p>
             </div>
   
