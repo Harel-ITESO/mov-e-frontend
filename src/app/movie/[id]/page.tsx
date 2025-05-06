@@ -21,10 +21,13 @@ export default function MovieDetailPage() {
 
     const fetchMovie = async () => {
       try {
+
+        // Verifica si el usuario está autenticado
         await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/v1/api/authentication/account/authenticated`, {
           withCredentials: true,
         });
 
+        // Trae los detalles de la película
         const res = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL}/v1/api/movies/movie/${id}/detail`,
           { withCredentials: true }
@@ -121,11 +124,16 @@ export default function MovieDetailPage() {
       <LoggedInNavbar />
 
       <div className="max-w-5xl mx-auto py-10 px-6">
+
+        {/* Botón de regreso */}
+        
         <div className="mb-4">
           <Link href="/main" className="text-green-400 hover:underline text-sm">
             ← Volver a películas populares
           </Link>
         </div>
+
+        {/* Detalle de película */}
 
         <div className="flex flex-col md:flex-row gap-6">
           <div className="w-full md:w-1/3">
@@ -142,6 +150,8 @@ export default function MovieDetailPage() {
             <p className="text-gray-300">{movie.overview}</p>
           </div>
         </div>
+
+        {/* Rating form */}
 
         <div className="mt-10 bg-gray-800 p-6 rounded shadow-md">
           <form onSubmit={handleRatingSubmit}>
