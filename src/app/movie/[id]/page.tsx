@@ -12,6 +12,7 @@ export default function MovieDetailPage() {
   const router = useRouter();
   const [movie, setMovie] = useState<any>(null);
   const [rating, setRating] = useState<number>(0);
+  const [movieRatings, setMovieRatings] = useState<any>(null);
   const [commentary, setCommentary] = useState("");
   const [loading, setLoading] = useState(true);
   const [hoveredRating, setHoveredRating] = useState<number | null>(null);
@@ -32,6 +33,7 @@ export default function MovieDetailPage() {
           `${process.env.NEXT_PUBLIC_API_URL}/v1/api/movies/movie/${id}/detail`,
           { withCredentials: true }
         );
+        //console.log("Movie data: ", res.data)
         setMovie(res.data);
       } catch (err) {
         console.error("Error al cargar detalles", err);
@@ -42,6 +44,22 @@ export default function MovieDetailPage() {
     };
 
     fetchMovie();
+
+    const fetchMovieRatings = async () => {
+      try {
+        const res = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/api/ratings/movie/${id}`,
+          { withCredentials: true }
+        );
+
+        setMovieRatings(res.data);
+      } catch (err) {
+        console.error("Error al cargar los ratings", err);
+      }
+    }
+
+    fetchMovieRatings();
+
   }, [id, router]);
 
   const handleRatingSubmit = async (e: React.FormEvent) => {
@@ -50,7 +68,7 @@ export default function MovieDetailPage() {
       await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/v1/api/ratings/rating`,
         {
-          movieId: movie.id,
+          tmdbId: movie.tmdbId,
           rating: rating,
           commentary,
         },
@@ -148,6 +166,40 @@ export default function MovieDetailPage() {
               {movie.title} <span className="text-gray-400">({movie.year})</span>
             </h1>
             <p className="text-gray-300">{movie.overview}</p>
+            {/* Lista de ratings de otros usuarios */}
+
+            {movieRatings?.length > 0 && (
+              <div className="mt-10">
+                <h2 className="text-2xl font-bold mb-4">Opiniones de otros usuarios</h2>
+                <div className="space-y-6">
+                  {movieRatings.map((ratingItem: any, index: number) => (
+                    <div
+                      key={index}
+                      className="bg-gray-800 p-4 rounded-lg shadow-md flex gap-4"
+                    >
+                      <img
+                        src={ratingItem.fromUser.avatarImagePath}
+                        alt={ratingItem.fromUser.username}
+                        className="w-12 h-12 rounded-full object-cover"
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-lg font-semibold">{ratingItem.fromUser.username}</h3>
+                          <span className="text-yellow-400 font-medium">
+                            <br/>
+                            {"".padEnd(Math.floor(ratingItem.rating), "★")}
+                            {ratingItem.rating % 1 === 0.5 ? "½" : ""}
+                          </span>
+                        </div>
+                        {ratingItem.commentary && (
+                          <p className="text-gray-300 mt-1">{ratingItem.commentary}</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

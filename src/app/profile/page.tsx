@@ -7,9 +7,16 @@ import Footer from "../components/footer";
 import Navbar from "../components/logged-in-navbar";
 import Link from "next/link";
 
-
 export default function ProfilePage() {
     const [user, setUser] = useState<{ username: string; email: string } | null>(null);
+    const [latestRating, setLatestRating] = useState<{
+      rating: number;
+      commentary: string;
+      toMovie: {
+        tmdbId: number;
+        title: string;
+      }
+    } | null>(null);
   
     useEffect(() => {
       const checkAuthAndLoad = async () => {
@@ -30,14 +37,29 @@ export default function ProfilePage() {
           setUser({ username: userData.username, email: userData.email })
 
         } catch (err) {
-          console.warn("Usuario no autenticado, redirigiendo...");
+          console.warn("Usuario no autenticado, redirigiendo...", err);
           window.location.href = "/login"; // o "/main"
         }
       };
     
       checkAuthAndLoad();
-    }, []);
+
+      const fetchRating = async () => {
+        const ratingsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/api/account/ratings`, {
+          credentials: "include",
+        });
     
+        if (ratingsRes.ok) {
+          const ratingsData = await ratingsRes.json();
+          if(Array.isArray(ratingsData) && ratingsData.length > 0) {
+            setLatestRating(ratingsData[ratingsData.length - 1]);
+          }
+        }
+      };
+
+      fetchRating();
+
+    }, []);
   
     return (
       <main className="bg-gray-950 text-white min-h-screen font-sans">
@@ -70,13 +92,26 @@ export default function ProfilePage() {
               </div>
   
               <div className="bg-gray-900 p-6 rounded shadow">
-                <h2 className="text-xl font-bold mb-4">Recent Activity</h2>
+              <h2 className="text-xl font-bold mb-4">Recent Activity</h2>
+              {latestRating ? (
                 <ul className="list-disc list-inside space-y-2 text-gray-400">
-                  <li>Rated Barbie ★★★★☆</li>
-                  <li>Added Oppenheimer to watchlist</li>
-                  <li>Reviewed The Batman</li>
+                  <li>
+                    Rated{" "}
+                    <Link
+                      href={`/movie/${latestRating.toMovie.tmdbId}`}
+                      className="text-green-400 hover:underline"
+                    >
+                      {latestRating.toMovie.title}
+                    </Link>{" "}
+                    {"".padEnd(Math.floor(latestRating.rating), "★")}
+                    {latestRating.rating % 1 === 0.5 ? "½" : ""}
+                  </li>
+                  {latestRating.commentary && <li>Commented: `{latestRating.commentary}`</li>}
                 </ul>
-              </div>
+              ) : (
+                <p className="text-gray-500">No recent activity yet.</p>
+              )}
+            </div>
             </div>
           </div>
         </section>
