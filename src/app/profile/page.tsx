@@ -12,10 +12,31 @@ export default function ProfilePage() {
     const [user, setUser] = useState<{ name: string; email: string } | null>(null);
   
     useEffect(() => {
-      const stored = localStorage.getItem("user");
-      const initial = stored ? JSON.parse(stored) : { name: "John Doe", email: "johndoe@email.com" };
-      setUser(initial);
+      const checkAuthAndLoad = async () => {
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/api/authentication/account/authenticated`, {
+            credentials: "include",
+          });
+    
+          if (!res.ok) {
+            throw new Error("Not authenticated");
+          }
+    
+          const stored = localStorage.getItem("user");
+          const initial = stored
+            ? JSON.parse(stored)
+            : { name: "John Doe", email: "johndoe@email.com" };
+    
+          setUser(initial);
+        } catch (err) {
+          console.warn("Usuario no autenticado, redirigiendo...");
+          window.location.href = "/login"; // o "/main"
+        }
+      };
+    
+      checkAuthAndLoad();
     }, []);
+    
   
     return (
       <main className="bg-gray-950 text-white min-h-screen font-sans">
