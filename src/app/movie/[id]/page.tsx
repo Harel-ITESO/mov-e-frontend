@@ -12,10 +12,11 @@ export default function MovieDetailPage() {
   const router = useRouter();
   const [movie, setMovie] = useState<any>(null);
   const [rating, setRating] = useState<number>(0);
-  const [movieRatings, setMovieRatings] = useState<any>(null);
+  const [movieRatings, setMovieRatings] = useState<any[]>([]);
   const [commentary, setCommentary] = useState("");
   const [loading, setLoading] = useState(true);
   const [hoveredRating, setHoveredRating] = useState<number | null>(null);
+  const [isFavorite, setIsFavorite] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -33,6 +34,16 @@ export default function MovieDetailPage() {
           `${process.env.NEXT_PUBLIC_API_URL}/v1/api/movies/movie/${id}/detail`,
           { withCredentials: true }
         );
+
+        // Trae los detalles del perfil para ver sus películas favoritas
+        const profileRes = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/api/account/profile`,
+          { withCredentials: true }
+        );
+
+        if (profileRes.data.favoriteThreeMovies?.some((fav: any) => fav.tmdbId === res.data.tmdbId)) {
+          setIsFavorite(true);
+        }
         //console.log("Movie data: ", res.data)
         setMovie(res.data);
       } catch (err) {
@@ -129,6 +140,69 @@ export default function MovieDetailPage() {
     return stars;
   };
 
+  const toggleLike = async (id: number, currentlyLiked: boolean) => {
+    try {
+      if (currentlyLiked) {
+        await axios.delete(
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/api/ratings/${id}/like`,
+          { withCredentials: true }
+        );
+      } else {
+        await axios.post(
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/api/ratings/${id}/like`,
+          {},
+          { withCredentials: true }
+        );
+      }
+
+      const updated = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/api/ratings/rating/${id}`,
+        { withCredentials: true }
+      );
+
+      setMovieRatings((prev) => 
+        prev.map((r) => 
+          r.id === id ? { ...r, ...updated.data } : r
+        )
+      );
+    } catch (err) {
+      console.error("Error al dar/quitar like", err);
+      alert("No se pudo procesar tu like");
+    }
+  };
+
+  const toggleFavorite = async () => {
+    try {
+      if (isFavorite) {
+        await axios.delete(
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/api/account/favorite-movie?position=0`,
+          { withCredentials: true }
+        );
+      } else {
+        await axios.patch(
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/api/account/favorite-movie`,
+          {
+            favoriteMovie: {
+              id: movie.tmdbId,
+              posterPath: movie.posterPath,
+              title: movie.title,
+            },
+          },
+          {
+            withCredentials: true,
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      }
+      setIsFavorite(!isFavorite);
+    } catch (err) {
+      console.error("Error al modificar favoritos", err);
+      alert("No se pudo actualizar tu lista de favoritas.");
+    }
+  };
+
   if (loading || !movie) {
     return (
       <main className="bg-gray-950 text-white min-h-screen flex items-center justify-center">
@@ -165,23 +239,38 @@ export default function MovieDetailPage() {
             <h1 className="text-4xl font-bold mb-2">
               {movie.title} <span className="text-gray-400">({movie.year})</span>
             </h1>
+            <button
+              onClick={toggleFavorite}
+              className={`mt-2 px-4 py-2 rounded text-sm font-semibold transition ${
+                isFavorite ? "bg-red-600 text-white" : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+              }`}
+            >
+              {isFavorite ? "★ Quitar de Favoritas" : "☆ Añadir a Favoritas"}
+            </button>
             <p className="text-gray-300">{movie.overview}</p>
+            
             {/* Lista de ratings de otros usuarios */}
 
             {movieRatings?.length > 0 && (
               <div className="mt-10">
                 <h2 className="text-2xl font-bold mb-4">Opiniones de otros usuarios</h2>
-                <div className="space-y-6">
+                <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
                   {movieRatings.map((ratingItem: any, index: number) => (
                     <div
                       key={index}
-                      className="bg-gray-800 p-4 rounded-lg shadow-md flex gap-4"
+                      className="bg-gray-800 p-3 rounded-lg shadow flex gap-3"
                     >
-                      <img
-                        src={ratingItem.fromUser.avatarImagePath}
-                        alt={ratingItem.fromUser.username}
-                        className="w-12 h-12 rounded-full object-cover"
-                      />
+                      {ratingItem.fromUser.avatarImagePath ? (
+                        <img
+                          src={ratingItem.fromUser.avatarImagePath}
+                          alt={ratingItem.fromUser.username}
+                          className="w-12 h-12 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-full bg-gray-600 flex items-center justify-center text-white font-semibold">
+                          {ratingItem.fromUser.username.charAt(0).toUpperCase()}
+                        </div>
+                      )}
                       <div className="flex-1">
                         <div className="flex items-center justify-between">
                           <h3 className="text-lg font-semibold">{ratingItem.fromUser.username}</h3>
@@ -191,9 +280,21 @@ export default function MovieDetailPage() {
                             {ratingItem.rating % 1 === 0.5 ? "½" : ""}
                           </span>
                         </div>
-                        {ratingItem.commentary && (
-                          <p className="text-gray-300 mt-1">{ratingItem.commentary}</p>
-                        )}
+                          {ratingItem.commentary && (
+                            <p className="text-gray-300 mt-1">{ratingItem.commentary}</p>
+                          )}
+                        <div className="flex items-center justify-between mt-2">
+                          <button
+                            onClick={() => toggleLike(ratingItem.id, ratingItem.likeFromCurrentUser)}
+                            className={`flex items-center gap-1 text-sm px-2 py-1 rounded ${
+                              ratingItem.likeFromCurrentUser
+                                ? "bg-green-600 text-white"
+                                : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                            }`}
+                          >
+                            ❤️ {ratingItem.likesCount}
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
