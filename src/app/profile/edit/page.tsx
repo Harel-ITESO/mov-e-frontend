@@ -20,8 +20,7 @@ export default function EditProfile() {
           { withCredentials: true }
         );
       } catch (err) {
-        console.warn("Usuario no autenticado, redirigiendo a login...");
-        router.push("/login");
+       
       }
     };
   
