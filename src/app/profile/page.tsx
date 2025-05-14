@@ -222,7 +222,12 @@ export default function ProfilePage() {
                         {r.commentary && <p className="text-gray-300 mt-1">{r.commentary}</p>}
                         <p className="text-sm text-gray-400 mt-1">❤️ {r.likesCount} likes</p>
                       </div>
-                      
+                      <button
+                        onClick={() => deleteRating(r.id)}
+                        className="btn btn-sm btn-error ml-4"
+                      >
+                        Eliminar
+                      </button>
                     </li>
                   ))}
                 </ul>
