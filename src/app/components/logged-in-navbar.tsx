@@ -9,6 +9,7 @@ import debounce from "lodash.debounce";
 
 export default function LoggedInNavbar() {
   const [searchTerm, setSearchTerm] = useState("");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const router = useRouter();
@@ -33,7 +34,7 @@ export default function LoggedInNavbar() {
     return () => {
       fetchSuggestions.cancel();
     };
-  }, [searchTerm]);
+  }, [fetchSuggestions, searchTerm]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();

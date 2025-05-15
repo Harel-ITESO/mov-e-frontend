@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 export type Movie = {
     title: string;
     poster: string;

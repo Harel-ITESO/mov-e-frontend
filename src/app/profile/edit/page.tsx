@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -20,7 +21,7 @@ export default function EditProfile() {
           { withCredentials: true }
         );
       } catch (err) {
-       
+        console.error("Error al validar la sesión:", err);
       }
     };
   

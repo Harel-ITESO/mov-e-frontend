@@ -1,3 +1,5 @@
+/* eslint-disable @next/next/no-img-element */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/app/profile/page.tsx
 "use client";
 
@@ -73,20 +75,24 @@ export default function ProfilePage() {
   }, []);
 
   const deleteRating = async (id: number) => {
+    console.log("Intentando eliminar calificación con ID:", id);
+    const confirmed = window.confirm("¿Estás seguro de que deseas eliminar esta calificación?");
+    if (!confirmed) return;
+
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/api/ratings/${id}`, {
         method: "DELETE",
         credentials: "include",
       });
 
-      if (res.ok) {
-        setRatings((prev) => prev.filter((r) => r.id !== id));
-      } else {
-        throw new Error("No se pudo eliminar el rating");
+      if (!res.ok) {
+        throw new Error("No se pudo eliminar la calificación.");
       }
+
+      setRatings((prev) => prev.filter((r) => r.id !== id));
     } catch (err) {
-      console.error("Error al eliminar el rating", err);
-      alert("No se pudo eliminar la calificación.");
+      console.error("Error eliminando la calificación:", err);
+      alert("Ocurrió un error al eliminar la calificación.");
     }
   };
 
@@ -105,25 +111,22 @@ export default function ProfilePage() {
         <div className="grid md:grid-cols-3 gap-10">
 
         <div className="col-span-1 bg-gray-900 p-6 rounded shadow border border-gray-700 flex flex-col items-center text-center">
-  <div className="mb-4">
-    {user?.avatarImagePath ? (
-      <img
-        src={user.avatarImagePath}
-        alt="Avatar"
-        className="w-24 h-24 rounded-full object-cover "
-      />
-    ) : (
-      <div className="w-24 h-24 bg-gray-800 rounded-full flex items-center justify-center text-4xl text-white border border-gray-600">
-        👤
-      </div>
-    )}
+          <div className="flex flex-col items-center justify-center mb-4 space-y-2">
+            {user?.avatarImagePath ? (
+              <img
+                src={user.avatarImagePath}
+                alt="Avatar"
+                className="w-24 h-24 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-24 h-24 bg-gray-800 rounded-full flex items-center justify-center text-4xl text-white border border-gray-600">
+                👤
+              </div>
+            )}
 
-    <h2 className="text-2xl font-extrabold mt-4">{user?.username}</h2>
-    <p className="text-sm text-gray-400">{user?.email}</p>
-  </div>
-
-
-
+            <h2 className="text-2xl font-extrabold">{user?.username}</h2>
+            <p className="text-sm text-gray-400">{user?.email}</p>
+          </div>
               <div className="w-full mt-4 text-left space-y-3 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-400 font-semibold">First Name:</span>
@@ -220,7 +223,6 @@ export default function ProfilePage() {
                           {r.rating % 1 === 0.5 ? "½" : ""}
                         </p>
                         {r.commentary && <p className="text-gray-300 mt-1">{r.commentary}</p>}
-                        <p className="text-sm text-gray-400 mt-1">❤️ {r.likesCount} likes</p>
                       </div>
                       <button
                         onClick={() => deleteRating(r.id)}
