@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 
-export default function PendingEmailPage({ params }: { params: { verificationId: string } }) {
+export default function PendingEmailPage({ params }: { params: { verificationId: any } }) {
   const router = useRouter();
   const { verificationId } = params;
   const [status, setStatus] = useState<"verifying" | "error">("verifying");
